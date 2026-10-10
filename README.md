@@ -107,9 +107,9 @@ You get the repo, the tests, a Dockerfile and a short runbook, with no lock-in t
 
 | Tier | Scope | Price |
 |---|---|---|
-| Starter | One flow, up to ~5 nodes, 1 webhook in, up to 2 sinks, tests + Docker | `$___` |
-| Standard | Up to ~15 nodes, LLM step, retries, idempotency, shadow run + cutover | `$___` |
-| Pro | Multiple flows, queue/worker, Postgres, CI, monitoring + 30 days support | `$___` |
+| Starter | One flow, up to ~5 nodes, 1 webhook in, up to 2 sinks, tests + Docker | from USD 500 |
+| Standard | Up to ~15 nodes, LLM step, retries, idempotency, shadow run + cutover | from USD 1,200 |
+| Pro | Multiple flows, queue/worker, Postgres, CI, monitoring + 30 days support | from USD 2,500 |
 
 *Placeholder prices. Final quote after the audit.*
 
