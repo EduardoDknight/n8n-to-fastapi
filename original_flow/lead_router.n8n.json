@@ -1,0 +1,33 @@
+{
+  "name": "Lead intake -> enrich -> classify -> route",
+  "nodes": [
+    {"id": "1", "name": "Webhook: Lead Form", "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [0, 300],
+     "parameters": {"httpMethod": "POST", "path": "lead", "responseMode": "onReceived"}},
+    {"id": "2", "name": "Enrich: Company Lookup", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4, "position": [240, 300],
+     "parameters": {"method": "GET", "url": "=https://enrich.example.com/v1/company?domain={{ $json.body.email.split('@')[1] }}"}},
+    {"id": "3", "name": "LLM: Classify Lead", "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic", "typeVersion": 1, "position": [480, 300],
+     "parameters": {"prompt": "=Classify this lead as hot, warm or cold. Message: {{ $('Webhook: Lead Form').item.json.body.message }} Budget: {{ $('Webhook: Lead Form').item.json.body.budget }}"}},
+    {"id": "4", "name": "Switch: Tier", "type": "n8n-nodes-base.switch", "typeVersion": 3, "position": [720, 300],
+     "parameters": {"rules": {"values": [
+       {"conditions": {"string": [{"value1": "={{ $json.text }}", "operation": "contains", "value2": "hot"}]}, "output": 0},
+       {"conditions": {"string": [{"value1": "={{ $json.text }}", "operation": "contains", "value2": "warm"}]}, "output": 1}]},
+      "fallbackOutput": 2}},
+    {"id": "5", "name": "Slack: #sales-hot", "type": "n8n-nodes-base.slack", "typeVersion": 2, "position": [960, 120],
+     "parameters": {"channel": "#sales-hot", "text": "=New HOT lead: {{ $('Webhook: Lead Form').item.json.body.name }}"}},
+    {"id": "6", "name": "CRM: Create Deal", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4, "position": [960, 300],
+     "parameters": {"method": "POST", "url": "https://crm.example.com/api/deals"}},
+    {"id": "7", "name": "Google Sheets: Append Row", "type": "n8n-nodes-base.googleSheets", "typeVersion": 4, "position": [960, 480],
+     "parameters": {"operation": "append", "documentId": "SHEET_ID_PLACEHOLDER", "sheetName": "Leads"}}
+  ],
+  "connections": {
+    "Webhook: Lead Form": {"main": [[{"node": "Enrich: Company Lookup", "type": "main", "index": 0}]]},
+    "Enrich: Company Lookup": {"main": [[{"node": "LLM: Classify Lead", "type": "main", "index": 0}]]},
+    "LLM: Classify Lead": {"main": [[{"node": "Switch: Tier", "type": "main", "index": 0}]]},
+    "Switch: Tier": {"main": [
+      [{"node": "Slack: #sales-hot", "type": "main", "index": 0}, {"node": "CRM: Create Deal", "type": "main", "index": 0}],
+      [{"node": "CRM: Create Deal", "type": "main", "index": 0}],
+      [{"node": "Google Sheets: Append Row", "type": "main", "index": 0}]]}
+  },
+  "settings": {"executionOrder": "v1"},
+  "meta": {"notes": "Sample flow with fake endpoints and data. No signature check, no dedupe, no retries, no tests."}
+}
